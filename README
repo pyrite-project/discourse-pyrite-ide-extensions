@@ -1,0 +1,12 @@
+Pyrite IDE extension registry
+
+Development
+-----------
+Requires the semantic gem (installed on boot through the plugin gem
+mechanism). Run the specs with:
+
+  LOAD_PLUGINS=1 bin/rspec plugins/discourse-pyrite-ide-extensions/spec
+  LOAD_PLUGINS=1 bin/qunit --standalone --target discourse-pyrite-ide-extensions
+
+License: AGPL-3.0, see LICENSE for details.
+

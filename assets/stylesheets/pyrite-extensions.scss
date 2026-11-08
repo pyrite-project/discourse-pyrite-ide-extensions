@@ -1,0 +1,462 @@
+.pyrite-publish-button {
+  white-space: nowrap;
+}
+
+// Install link inside the registry-managed table of an extension's first post.
+.cooked .pyrite-install-link {
+  margin-right: 0.25em;
+  color: var(--secondary);
+  text-decoration: none;
+}
+
+.cooked blockquote.pyrite-callout {
+  --pyrite-callout-color: var(--tertiary);
+
+  margin: 0 0 1em;
+  padding: 0.75em 1em;
+  border-left: 4px solid var(--pyrite-callout-color);
+  background: var(--primary-very-low);
+
+  &.--warning {
+    --pyrite-callout-color: var(--highlight-high);
+  }
+
+  &.--danger {
+    --pyrite-callout-color: var(--danger);
+
+    background: var(--danger-low);
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.pyrite-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  margin: 0;
+  list-style: none;
+
+  &__chip {
+    padding: 0.1em 0.6em;
+    border-radius: var(--d-border-radius);
+    background: var(--primary-low);
+    font-family: var(--d-font-family--monospace);
+    font-size: var(--font-down-1);
+
+    &.--empty {
+      font-family: inherit;
+      color: var(--primary-medium);
+    }
+  }
+}
+
+.pyrite-wizard {
+  max-width: 44em;
+  margin: 1.5em auto;
+
+  &__steps {
+    display: flex;
+    gap: 1.5em;
+    margin: 0 0 1.5em;
+    padding: 0;
+    list-style: none;
+    border-bottom: 1px solid var(--primary-low);
+  }
+
+  &__step {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding-bottom: 0.5em;
+    color: var(--primary-medium);
+
+    &.--current {
+      color: var(--primary);
+      border-bottom: 2px solid var(--tertiary);
+      margin-bottom: -1px;
+    }
+
+    &.--done {
+      color: var(--primary-high);
+    }
+  }
+
+  &__step-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    background: var(--primary-low);
+    font-size: var(--font-down-1);
+
+    .--current & {
+      background: var(--tertiary);
+      color: var(--secondary);
+    }
+  }
+
+  &__dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5em;
+    padding: 2em 1em;
+    border: 2px dashed var(--primary-low-mid);
+    border-radius: var(--d-border-radius-large);
+    color: var(--primary-high);
+    cursor: pointer;
+
+    &:hover,
+    &.--dragging {
+      border-color: var(--tertiary);
+      background: var(--tertiary-very-low);
+    }
+
+    .d-icon {
+      font-size: var(--font-up-4);
+    }
+  }
+
+  &__file {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  &__status {
+    margin-top: 1em;
+    color: var(--primary-high);
+  }
+
+  &__summary {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5em 1.5em;
+    margin: 1.5em 0;
+
+    dt {
+      color: var(--primary-high);
+    }
+
+    dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5em;
+    margin-top: 1.5em;
+  }
+
+  @media (width <= 40em) {
+    &__steps {
+      gap: 0.75em;
+      font-size: var(--font-down-1);
+    }
+
+    &__summary {
+      grid-template-columns: 1fr;
+      gap: 0.1em;
+
+      dd {
+        margin-bottom: 0.75em;
+      }
+    }
+  }
+}
+
+.pyrite-install {
+  display: flex;
+  justify-content: center;
+  padding: 2em 1em;
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 32em;
+    padding: 1.5em;
+    border: 1px solid var(--primary-low);
+    border-radius: var(--d-border-radius-large);
+    background: var(--secondary);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+  }
+
+  &__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: 2.75em;
+    height: 2.75em;
+    border-radius: var(--d-border-radius-large);
+    background: var(--tertiary-low);
+    color: var(--tertiary);
+    font-size: var(--font-up-2);
+  }
+
+  &__heading {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0;
+    font-size: var(--font-up-3);
+    overflow-wrap: anywhere;
+  }
+
+  &__byline {
+    color: var(--primary-high);
+  }
+
+  &__version {
+    flex: 0 0 auto;
+    width: auto;
+    margin: 0;
+  }
+
+  &__permissions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25em;
+    margin: 0;
+    list-style: none;
+  }
+
+  &__permission {
+    padding: 0.1em 0.6em;
+    border-radius: var(--d-border-radius);
+    background: var(--primary-low);
+    font-family: var(--d-font-family--monospace);
+    font-size: var(--font-down-1);
+  }
+
+  &__banner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25em;
+    padding: 0.75em 1em;
+    border-left: 4px solid var(--tertiary);
+    background: var(--primary-very-low);
+
+    &.--deprecated {
+      border-color: var(--highlight-high);
+    }
+
+    &.--advisory,
+    &.--withdrawn,
+    &.--takedown,
+    &.--delisted {
+      border-color: var(--danger);
+      background: var(--danger-low);
+    }
+  }
+
+  &__status {
+    min-height: 1.5em;
+    color: var(--primary-high);
+  }
+
+  &__actions {
+    display: flex;
+  }
+
+  &__open {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  &__downloads {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+    opacity: 0.85;
+
+    &.--emphasized {
+      opacity: 1;
+    }
+  }
+
+  &__footer {
+    padding-top: 0.5em;
+    border-top: 1px solid var(--primary-low);
+  }
+}
+
+.pyrite-status {
+  display: inline-block;
+  padding: 0.1em 0.6em;
+  border-radius: var(--d-border-radius);
+  background: var(--success-low);
+  font-size: var(--font-down-1);
+
+  &.--notice,
+  &.--deprecated {
+    background: var(--highlight-low);
+  }
+
+  &.--advisory,
+  &.--withdrawn,
+  &.--delisted,
+  &.--takedown {
+    background: var(--danger-low);
+  }
+}
+
+.pyrite-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    color: var(--primary-high);
+    font-weight: normal;
+  }
+
+  th,
+  td {
+    padding: 0.5em 0.75em;
+    border-bottom: 1px solid var(--primary-low);
+    vertical-align: top;
+  }
+}
+
+.pyrite-manage {
+  max-width: 56em;
+  margin: 1.5em auto;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5em 1em;
+    margin-bottom: 1.5em;
+  }
+
+  &__title {
+    margin: 0;
+  }
+
+  &__section {
+    margin-bottom: 2em;
+
+    h2 {
+      margin: 0 0 0.5em;
+    }
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__message {
+    margin: 0.25em 0;
+    color: var(--primary-high);
+  }
+
+  &__changelog {
+    display: block;
+    margin: 1em 0;
+
+    textarea {
+      width: 100%;
+      min-height: 6em;
+    }
+  }
+}
+
+.pyrite-admin {
+  max-width: 64em;
+  margin: 1.5em auto;
+
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 1em;
+  }
+
+  &__search {
+    flex: 1;
+    margin: 0;
+  }
+
+  &__row {
+    cursor: pointer;
+
+    &:hover {
+      background: var(--primary-very-low);
+    }
+
+    code {
+      display: block;
+      color: var(--primary-high);
+    }
+  }
+
+  &__pager {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5em;
+    margin: 1em 0;
+  }
+
+  &__detail {
+    margin-top: 2em;
+    padding-top: 1em;
+    border-top: 1px solid var(--primary-low);
+  }
+
+  &__detail-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75em;
+
+    h2 {
+      margin: 0;
+    }
+  }
+
+  &__history {
+    margin: 0;
+    list-style: none;
+  }
+
+  &__event {
+    padding: 0.5em 0;
+    border-bottom: 1px solid var(--primary-low);
+  }
+
+  &__event-date {
+    color: var(--primary-medium);
+    margin-right: 0.5em;
+  }
+
+  &__note {
+    display: block;
+    color: var(--primary-high);
+  }
+}

@@ -1,0 +1,32 @@
+discourse_pyrite_ide_extensions:
+  pyrite_extensions_enabled:
+    default: false
+    client: true
+  pyrite_extensions_category:
+    default: ""
+    type: category
+    client: true
+  pyrite_extensions_min_trust_level_to_publish:
+    default: 1
+    enum: "TrustLevelSetting"
+    client: true
+  pyrite_extensions_max_package_size_mb:
+    default: 20
+    min: 1
+    max: 200
+    client: true
+  pyrite_extensions_max_package_entries:
+    default: 5000
+    min: 10
+    max: 100000
+  pyrite_extensions_max_unpacked_size_mb:
+    default: 200
+    min: 1
+    max: 2000
+  pyrite_extensions_author_withdraw_window_hours:
+    default: 72
+    min: 0
+    max: 8760
+  pyrite_extensions_ide_download_url:
+    default: "https://github.com/pyrite-project/pyrite-ide/releases"
+    client: true

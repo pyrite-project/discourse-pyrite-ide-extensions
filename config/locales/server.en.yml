@@ -1,0 +1,67 @@
+en:
+  site_settings:
+    pyrite_extensions_enabled: "Enable the Pyrite IDE extension registry."
+    pyrite_extensions_category: "Category used to publish Pyrite IDE extensions. Only the extension publishing flow and staff can start topics in it."
+    pyrite_extensions_min_trust_level_to_publish: "Minimum trust level required to publish an extension."
+    pyrite_extensions_max_package_size_mb: "Largest accepted extension package, in MB."
+    pyrite_extensions_max_package_entries: "Largest number of files accepted inside an extension package."
+    pyrite_extensions_max_unpacked_size_mb: "Largest total unpacked size accepted for an extension package, in MB."
+    pyrite_extensions_author_withdraw_window_hours: "How long after publishing authors can withdraw a version themselves. Set to 0 to allow only staff to withdraw versions."
+    pyrite_extensions_ide_download_url: "Where the extension install page sends people to download Pyrite IDE."
+  activerecord:
+    attributes:
+      pyrite_extensions/extension:
+        ext_id: "Plugin id"
+  pyrite_extensions:
+    package:
+      errors:
+        unreadable_archive: "The file is not a valid zip archive."
+        too_many_entries: "The package contains too many files."
+        unsafe_entry_path: "The package contains a file path that leaves the package folder."
+        symlink_entry: "The package contains a symbolic link."
+        unpacked_too_large: "The unpacked package is too large."
+        manifest_missing: "The package has no plugin.toml at its root."
+        manifest_too_large: "plugin.toml is too large."
+        manifest_syntax: "plugin.toml could not be read: %{detail}."
+        manifest_invalid_id: "The plugin id must be an npm-style name such as my-plugin or @scope/my-plugin: lowercase letters, digits, dots, dashes and underscores, starting and ending with a letter or digit."
+        manifest_invalid_name: "The plugin name is missing or too long."
+        manifest_invalid_version: "The plugin version must be a semantic version such as 1.2.0."
+        manifest_invalid_type: "The plugin type must be ui, service or data."
+        manifest_invalid_manifest_version: "Only manifest versions 1 and 2 are supported."
+        manifest_invalid_platforms: "The plugin platforms must be a list of windows, linux, macos or android."
+        manifest_invalid_permissions: "The plugin permissions must be a list of short text values."
+        entry_point_missing: "The package has no __main__.py at its root."
+    block:
+      summary: "Summary"
+      latest: "Latest"
+      compatibility: "Compatibility"
+      permissions: "Permissions"
+      author: "Author"
+      install: "Install"
+      open_in_ide: "Open in Pyrite IDE"
+      versions: "Versions"
+      version: "Version"
+      date: "Date"
+      status: "Status"
+      none: "None"
+    moderation:
+      status:
+        none: "Available"
+        notice: "Notice"
+        deprecated: "Deprecated"
+        advisory: "Advisory"
+        withdrawn: "Withdrawn"
+        delisted: "Delisted"
+        takedown: "Removed"
+    errors:
+      file_type: "Upload a .pyrix or .zip file."
+      file_too_big: "The package is larger than the allowed size."
+      ext_id_taken: "This plugin id is already registered."
+      ext_id_taken_validation: "is already registered"
+      version_exists: "This version already exists."
+      too_many_releases: "Too many releases were requested at once."
+      delist_whole_package: "Only a whole package can be delisted, not a single version."
+      package_for_other_extension: "This package is for a different plugin. Its id must be %{ext_id}."
+      moderation_not_allowed: "You cannot change the moderation status of this plugin."
+      takedown_is_final: "A removed plugin cannot be restored because its files were deleted."
+      topic_failed: "The extension topic could not be created."
