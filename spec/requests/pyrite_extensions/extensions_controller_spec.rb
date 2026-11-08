@@ -24,7 +24,7 @@ RSpec.describe PyriteExtensions::ExtensionsController do
     end
 
     it "rejects anonymous users" do
-      post "/pyrite/api/v1/extensions", params: params
+      post "/pyrite/registry/extensions.json", params: params
 
       expect(response.status).to eq(403)
     end
@@ -33,12 +33,12 @@ RSpec.describe PyriteExtensions::ExtensionsController do
       before { sign_in(user) }
 
       it "publishes the extension and its registry topic" do
-        post "/pyrite/api/v1/extensions", params: params
+        post "/pyrite/registry/extensions.json", params: params
 
         extension = PyriteExtensions::Extension.find_by!(ext_id: "com.example.hello")
         expect(response.status).to eq(200)
-        expect(response.parsed_body).to include(
-          "ext_id" => "com.example.hello",
+        expect(response.parsed_body["extension"]).to include(
+          "id" => "com.example.hello",
           "topic_url" => extension.topic.url,
         )
         expect(extension.topic.category_id).to eq(category.id)
@@ -48,19 +48,19 @@ RSpec.describe PyriteExtensions::ExtensionsController do
       it "returns 403 for users below the minimum trust level" do
         sign_in(Fabricate(:user, trust_level: TrustLevel[0]))
 
-        post "/pyrite/api/v1/extensions", params: params
+        post "/pyrite/registry/extensions.json", params: params
 
         expect(response.status).to eq(403)
       end
 
       it "returns 400 for missing params" do
-        post "/pyrite/api/v1/extensions", params: params.merge(title: "")
+        post "/pyrite/registry/extensions.json", params: params.merge(title: "")
 
         expect(response.status).to eq(400)
       end
 
       it "returns 404 for an unknown upload id" do
-        post "/pyrite/api/v1/extensions", params: params.merge(upload_id: 0)
+        post "/pyrite/registry/extensions.json", params: params.merge(upload_id: 0)
 
         expect(response.status).to eq(404)
       end
@@ -73,7 +73,7 @@ RSpec.describe PyriteExtensions::ExtensionsController do
             "__main__.py" => "other",
           )
 
-        post "/pyrite/api/v1/extensions", params: params.merge(upload_id: foreign.id)
+        post "/pyrite/registry/extensions.json", params: params.merge(upload_id: foreign.id)
 
         expect(response.status).to eq(404)
       end
@@ -82,7 +82,7 @@ RSpec.describe PyriteExtensions::ExtensionsController do
         shared = stage_pyrite_upload(admin)
         expect(stage_pyrite_upload(user)).to eq(shared)
 
-        post "/pyrite/api/v1/extensions", params: params.merge(upload_id: shared.id)
+        post "/pyrite/registry/extensions.json", params: params.merge(upload_id: shared.id)
 
         expect(response.status).to eq(200)
       end
@@ -90,7 +90,7 @@ RSpec.describe PyriteExtensions::ExtensionsController do
       it "returns 422 with a message when the package is invalid" do
         invalid = stage_pyrite_upload(user, "__main__.py" => "x")
 
-        post "/pyrite/api/v1/extensions", params: params.merge(upload_id: invalid.id)
+        post "/pyrite/registry/extensions.json", params: params.merge(upload_id: invalid.id)
 
         expect(response.status).to eq(422)
         expect(response.parsed_body["errors"]).to eq(
@@ -101,7 +101,7 @@ RSpec.describe PyriteExtensions::ExtensionsController do
       it "returns 422 when the extension id is taken by another user" do
         Fabricate(:pyrite_extension, ext_id: "com.example.hello")
 
-        post "/pyrite/api/v1/extensions", params: params
+        post "/pyrite/registry/extensions.json", params: params
 
         expect(response.status).to eq(422)
         expect(response.parsed_body["errors"]).to eq(
@@ -110,8 +110,25 @@ RSpec.describe PyriteExtensions::ExtensionsController do
         expect(Topic.where(category_id: category.id).count).to eq(0)
       end
 
+      it "rejects direct publication into another user's scope" do
+        PyriteExtensions::Scope.claim_for("@alice/other", admin)
+        staged = stage_pyrite_upload(
+          user,
+          "plugin.toml" => manifest_toml("id" => "@alice/hello"),
+          "__main__.py" => "print(1)",
+        )
+
+        post "/pyrite/registry/extensions.json", params: params.merge(upload_id: staged.id)
+
+        expect(response.status).to eq(422)
+        expect(response.parsed_body["errors"].join).to include(
+          I18n.t("pyrite_extensions.errors.scope_taken"),
+        )
+        expect(PyriteExtensions::Extension.exists?(ext_id: "@alice/hello")).to eq(false)
+      end
+
       it "returns 422 with the failure message when the topic cannot be created" do
-        post "/pyrite/api/v1/extensions", params: params.merge(title: "x")
+        post "/pyrite/registry/extensions.json", params: params.merge(title: "x")
 
         expect(response.status).to eq(422)
         expect(response.parsed_body["errors"].join).to be_present
@@ -127,12 +144,12 @@ RSpec.describe PyriteExtensions::ExtensionsController do
 
     before { extension.update!(latest_release: newer) }
 
-    it "returns the extension with versions newest first, without a .json suffix" do
-      get "/pyrite/api/v1/extensions/com.example.hello"
+    it "returns the extension with versions newest first, with a .json suffix" do
+      get "/pyrite/registry/extensions/com.example.hello.json"
 
       expect(response.status).to eq(200)
-      expect(response.parsed_body).to include(
-        "ext_id" => "com.example.hello",
+      expect(response.parsed_body["extension"]).to include(
+        "id" => "com.example.hello",
         "name" => "Hello",
         "summary" => "Says hello",
         "owner_username" => user.username,
@@ -144,13 +161,13 @@ RSpec.describe PyriteExtensions::ExtensionsController do
           "message" => nil,
         },
       )
-      expect(response.parsed_body["versions"].map { |version| version["version"] }).to eq(
+      expect(response.parsed_body["extension"]["releases"].map { |version| version["version"] }).to eq(
         %w[1.2.0 1.0.0],
       )
     end
 
     it "returns 404 for an unknown extension" do
-      get "/pyrite/api/v1/extensions/com.example.missing"
+      get "/pyrite/registry/extensions/com.example.missing.json"
 
       expect(response.status).to eq(404)
     end
@@ -158,35 +175,35 @@ RSpec.describe PyriteExtensions::ExtensionsController do
     it "hides taken down extensions from everyone except staff" do
       extension.update!(moderation_level: :takedown)
 
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(404)
 
       sign_in(user)
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(404)
 
       sign_in(admin)
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(200)
-      expect(response.parsed_body["moderation"]["level"]).to eq("takedown")
+      expect(response.parsed_body["extension"]["moderation"]["level"]).to eq("takedown")
     end
 
     it "hides delisted extensions from the public but not from the owner or staff" do
       extension.update!(moderation_level: :delisted)
 
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(404)
 
       sign_in(Fabricate(:user))
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(404)
 
       sign_in(user)
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(200)
 
       sign_in(admin)
-      get "/pyrite/api/v1/extensions/com.example.hello"
+      get "/pyrite/registry/extensions/com.example.hello.json"
       expect(response.status).to eq(200)
     end
   end

@@ -2,7 +2,7 @@
 
 module PyriteExtensions
   class ExtensionSerializer < ApplicationSerializer
-    attributes :ext_id,
+    attributes :id,
                :name,
                :summary,
                :repo_url,
@@ -11,8 +11,12 @@ module PyriteExtensions
                :owner_username,
                :topic_url,
                :latest_version,
-               :versions,
+               :releases,
                :moderation
+
+    def id
+      object.ext_id
+    end
 
     def owner_username
       object.owner.username
@@ -30,7 +34,7 @@ module PyriteExtensions
       object.latest_release&.version
     end
 
-    def versions
+    def releases
       object.releases_newest_first.map do |release|
         state = release.effective_state
         { version: release.version, published_at: release.published_at, level: state.level }

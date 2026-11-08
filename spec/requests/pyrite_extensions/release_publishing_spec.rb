@@ -9,7 +9,7 @@ RSpec.describe PyriteExtensions::ReleasesController, "#create" do
   fab!(:extension) { Fabricate(:pyrite_extension, ext_id: "@my-org/hello", owner: author, topic:) }
   fab!(:existing) { Fabricate(:pyrite_release, extension:, version: "1.0.0") }
 
-  let(:url) { "/pyrite/api/v1/extensions/@my-org/hello/versions" }
+  let(:url) { "/pyrite/registry/extensions/@my-org/hello/releases.json" }
   let(:version) { "1.1.0" }
   let(:upload) do
     stage_pyrite_upload(
@@ -38,7 +38,7 @@ RSpec.describe PyriteExtensions::ReleasesController, "#create" do
     post url, params: { upload_id: upload.id, changelog: "Faster" }
 
     expect(response.status).to eq(200)
-    expect(response.parsed_body).to include("version" => "1.1.0")
+    expect(response.parsed_body["release"]).to include("version" => "1.1.0")
     expect(extension.reload.latest_release.version).to eq("1.1.0")
   end
 
@@ -46,10 +46,10 @@ RSpec.describe PyriteExtensions::ReleasesController, "#create" do
     sign_in(author)
     post url, params: { upload_id: upload.id }
 
-    get "/pyrite/api/v1/extensions/@my-org/hello/versions/1.1.0"
+    get "/pyrite/registry/extensions/@my-org/hello/releases/1.1.0.json"
 
     expect(response.status).to eq(200)
-    expect(response.parsed_body).to include("version" => "1.1.0", "installable" => true)
+    expect(response.parsed_body["release"]).to include("version" => "1.1.0", "installable" => true)
   end
 
   it "explains a package that belongs to another plugin" do
@@ -98,7 +98,7 @@ RSpec.describe PyriteExtensions::ReleasesController, "#create" do
   it "answers 404 for an unknown plugin" do
     sign_in(author)
 
-    post "/pyrite/api/v1/extensions/nobody/versions", params: { upload_id: upload.id }
+    post "/pyrite/registry/extensions/nobody/releases.json", params: { upload_id: upload.id }
 
     expect(response.status).to eq(404)
   end

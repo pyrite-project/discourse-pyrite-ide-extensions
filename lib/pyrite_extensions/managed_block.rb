@@ -84,7 +84,7 @@ module PyriteExtensions
 
     def install_cell(extension, latest)
       base = "#{Discourse.base_url}/pyrite"
-      package = "#{base}/api/v1/extensions/#{extension.ext_id}/versions/#{latest.version}/package"
+      package = "#{base}/registry/extensions/#{extension.ext_id}/releases/#{latest.version}/package"
       "[#{t(:open_in_ide)}](#{base}/install/#{extension.ext_id}) · [.pyrix](#{package}.pyrix) · [.zip](#{package}.zip)"
     end
 

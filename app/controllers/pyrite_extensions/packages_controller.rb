@@ -8,9 +8,12 @@ module PyriteExtensions
     def create
       Extension::UploadPackage.call(service_params) do
         on_success do |upload:, package:, extension: nil|
-          render_serialized(upload, StagedPackageSerializer, root: false, package:, extension:)
+          render_serialized(upload, StagedPackageSerializer, root: "package", package:, extension:)
         end
         on_failed_policy(:can_publish) { raise Discourse::InvalidAccess }
+        on_failed_policy(:scope_available) do
+          render_json_error(I18n.t("pyrite_extensions.errors.scope_taken"), status: 403)
+        end
         on_failed_policy(:valid_package) { |policy| render_json_error(policy.reason, status: 422) }
         on_failed_policy(:extension_id_available) do
           render_json_error(I18n.t("pyrite_extensions.errors.ext_id_taken"), status: 403)

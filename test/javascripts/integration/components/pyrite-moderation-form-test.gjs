@@ -65,7 +65,7 @@ module("Integration | Component | pyrite-moderation-form", function (hooks) {
 
   test("requires a message to set a warning but not to lift one", async function (assert) {
     let posted = 0;
-    pretender.post("/pyrite/api/v1/extensions/a/moderation", () => {
+    pretender.post("/pyrite/registry/extensions/a/moderation.json", () => {
       posted++;
       return response({ success: "OK" });
     });
@@ -87,11 +87,12 @@ module("Integration | Component | pyrite-moderation-form", function (hooks) {
   test("sends the level, message and version, then reports done", async function (assert) {
     let body;
     let done = 0;
-    pretender.post("/pyrite/api/v1/extensions/%40my-org%2Fa/moderation", () =>
-      response({ success: "OK" })
+    pretender.post(
+      "/pyrite/registry/extensions/%40my-org%2Fa/moderation.json",
+      () => response({ success: "OK" })
     );
     pretender.post(
-      "/pyrite/api/v1/extensions/@my-org/a/moderation",
+      "/pyrite/registry/extensions/@my-org/a/moderation.json",
       (request) => {
         body = new URLSearchParams(request.requestBody);
         return response({ success: "OK" });

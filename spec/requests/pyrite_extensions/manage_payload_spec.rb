@@ -10,8 +10,8 @@ RSpec.describe PyriteExtensions::ExtensionsController, "#show payload" do
   before { SiteSetting.pyrite_extensions_enabled = true }
 
   def payload
-    get "/pyrite/api/v1/extensions/@my-org/hello"
-    response.parsed_body
+    get "/pyrite/registry/extensions/@my-org/hello.json"
+    response.parsed_body["extension"]
   end
 
   it "gives the public view to everyone else" do
@@ -39,11 +39,11 @@ RSpec.describe PyriteExtensions::ExtensionsController, "#show payload" do
     get "/pyrite/manage/@my-org/hello"
     expect(response.status).to eq(200)
 
-    get "/pyrite/admin"
-    expect(response.status).to eq(403)
+    get "/admin/plugins/discourse-pyrite-ide-extensions/registry"
+    expect(response.status).to eq(404)
 
     sign_in(admin)
-    get "/pyrite/admin"
+    get "/admin/plugins/discourse-pyrite-ide-extensions/registry"
     expect(response.status).to eq(200)
   end
 end

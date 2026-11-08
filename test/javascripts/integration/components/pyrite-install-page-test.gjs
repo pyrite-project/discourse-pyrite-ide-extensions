@@ -4,18 +4,18 @@ import { setupRenderingTest } from "discourse/tests/helpers/component-test";
 import PyriteInstallPage from "discourse/plugins/discourse-pyrite-ide-extensions/discourse/components/pyrite-install-page";
 
 const extension = {
-  ext_id: "com.example.hello",
+  id: "com.example.hello",
   name: "Hello",
   owner_username: "devon",
   license: "MIT",
   topic_url: "/t/hello/12",
-  versions: [{ version: "1.2.0" }, { version: "1.1.0" }],
+  releases: [{ version: "1.2.0" }, { version: "1.1.0" }],
 };
 
 function buildRelease(overrides = {}) {
   return {
     version: "1.2.0",
-    permissions: ["editor.read"],
+    manifest: { permissions: ["editor.read"] },
     installable: true,
     moderation: { level: "none" },
     ...overrides,

@@ -14,7 +14,7 @@ RSpec.describe PyriteExtensions::AdvisoriesController do
   end
 
   def advisories(releases)
-    get "/pyrite/api/v1/advisories", params: { releases: }
+    get "/pyrite/registry/advisories.json", params: { releases: }
     response.parsed_body["advisories"]
   end
 
@@ -29,7 +29,7 @@ RSpec.describe PyriteExtensions::AdvisoriesController do
 
     expect(result.map { |entry| entry["version"] }).to contain_exactly("1.0.0", "1.1.0")
     flagged = result.find { |entry| entry["version"] == "1.0.0" }
-    expect(flagged).to include("ext_id" => "com.example.hello", "installable" => true)
+    expect(flagged).to include("extension_id" => "com.example.hello", "installable" => true)
     expect(flagged["moderation"]).to include(
       "level" => "advisory",
       "severity" => "high",
@@ -42,7 +42,7 @@ RSpec.describe PyriteExtensions::AdvisoriesController do
   it "splits scoped ids at the last @" do
     result = advisories("@my-org/tool@2.0.0")
 
-    expect(result.map { |entry| [entry["ext_id"], entry["version"]] }).to eq(
+    expect(result.map { |entry| [entry["extension_id"], entry["version"]] }).to eq(
       [["@my-org/tool", "2.0.0"]],
     )
   end
@@ -82,15 +82,15 @@ RSpec.describe PyriteExtensions::AdvisoriesController do
   it "refuses requests for too many releases at once" do
     list = (1..101).map { |n| "plugin-#{n}@1.0.0" }.join(",")
 
-    get "/pyrite/api/v1/advisories", params: { releases: list }
+    get "/pyrite/registry/advisories.json", params: { releases: list }
 
     expect(response.status).to eq(400)
   end
 
   it "rate limits repeated checks from one address" do
-    60.times { get "/pyrite/api/v1/advisories", params: { releases: "com.example.hello@1.0.0" } }
+    60.times { get "/pyrite/registry/advisories.json", params: { releases: "com.example.hello@1.0.0" } }
 
-    get "/pyrite/api/v1/advisories", params: { releases: "com.example.hello@1.0.0" }
+    get "/pyrite/registry/advisories.json", params: { releases: "com.example.hello@1.0.0" }
 
     expect(response.status).to eq(429)
   end

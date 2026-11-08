@@ -32,5 +32,5 @@ export function levelsFor({ staff, packageScope }) {
 }
 
 export function moderationUrl(extId) {
-  return `/pyrite/api/v1/extensions/${extId}/moderation`;
+  return `/pyrite/registry/extensions/${extId}/moderation.json`;
 }

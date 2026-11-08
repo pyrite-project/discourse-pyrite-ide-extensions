@@ -16,7 +16,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
     %w[pyrix zip].each do |format|
       it "serves the package as .#{format} and counts the download" do
         expect {
-          get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.#{format}"
+          get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.#{format}"
         }.to change { release.reload.downloads_count }.by(1)
 
         expect(response.status).to eq(200)
@@ -28,7 +28,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
     end
 
     it "returns 404 for other package formats" do
-      get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.tar"
+      get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.tar"
 
       expect(response.status).to eq(404)
     end
@@ -36,7 +36,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
     it "returns 404 when the release has no stored upload" do
       release.update_columns(upload_id: nil)
 
-      get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.pyrix"
+      get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.pyrix"
 
       expect(response.status).to eq(404)
     end
@@ -45,7 +45,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
       release.update!(moderation_level: :withdrawn, moderation_message: "Broken build")
 
       expect {
-        get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.pyrix"
+        get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.pyrix"
       }.not_to change { release.reload.downloads_count }
 
       expect(response.status).to eq(410)
@@ -55,7 +55,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
     it "returns 410 when the whole extension is withdrawn" do
       extension.update!(moderation_level: :withdrawn)
 
-      get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.zip"
+      get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.zip"
 
       expect(response.status).to eq(410)
     end
@@ -64,7 +64,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
       release.update!(moderation_level: :withdrawn)
       sign_in(admin)
 
-      get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.pyrix"
+      get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.pyrix"
 
       expect(response.status).to eq(200)
     end
@@ -72,7 +72,7 @@ RSpec.describe PyriteExtensions::DownloadsController do
     it "returns 404 for a delisted extension for the public" do
       extension.update!(moderation_level: :delisted)
 
-      get "/pyrite/api/v1/extensions/com.example.hello/versions/0.1.0/package.pyrix"
+      get "/pyrite/registry/extensions/com.example.hello/releases/0.1.0/package.pyrix"
 
       expect(response.status).to eq(404)
     end

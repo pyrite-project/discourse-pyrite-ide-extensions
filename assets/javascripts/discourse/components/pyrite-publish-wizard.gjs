@@ -163,11 +163,11 @@ export default class PyritePublishWizard extends Component {
     this.error = null;
     this.publishing = true;
     try {
-      const result = await ajax("/pyrite/api/v1/extensions", {
+      const result = await ajax("/pyrite/registry/extensions.json", {
         type: "POST",
         data: { upload_id: this.staged.upload_id, ...this.details },
       });
-      DiscourseURL.routeTo(result.topic_url);
+      DiscourseURL.routeTo(result.extension.topic_url);
     } catch (e) {
       this.error = extractError(e);
       this.publishing = false;

@@ -7,6 +7,10 @@
 # url: https://github.com/pyrite-project/discourse-pyrite-ide-extensions
 
 enabled_site_setting :pyrite_extensions_enabled
+add_admin_route "pyrite_extensions.admin.title",
+                "discourse-pyrite-ide-extensions",
+                use_new_show_route: true
+register_svg_icon "puzzle-piece"
 
 gem 'semantic', '1.6.1'
 

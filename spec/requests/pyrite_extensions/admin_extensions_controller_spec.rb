@@ -13,16 +13,16 @@ RSpec.describe PyriteExtensions::Admin::ExtensionsController do
   before { SiteSetting.pyrite_extensions_enabled = true }
 
   def listed(params = {})
-    get "/pyrite/api/v1/admin/extensions", params: params
-    response.parsed_body["extensions"].map { |extension| extension["ext_id"] }
+    get "/pyrite/registry/admin/extensions.json", params: params
+    response.parsed_body["extensions"].map { |extension| extension["id"] }
   end
 
   it "is closed to everyone but staff" do
     sign_in(user)
-    get "/pyrite/api/v1/admin/extensions"
+    get "/pyrite/registry/admin/extensions.json"
     expect(response.status).to eq(403)
 
-    get "/pyrite/api/v1/admin/extensions/alpha-tool"
+    get "/pyrite/registry/admin/extensions/alpha-tool.json"
     expect(response.status).to eq(403)
   end
 
@@ -46,7 +46,7 @@ RSpec.describe PyriteExtensions::Admin::ExtensionsController do
     end
 
     it "reports totals for paging" do
-      get "/pyrite/api/v1/admin/extensions"
+      get "/pyrite/registry/admin/extensions.json"
 
       expect(response.parsed_body["meta"]).to include("total" => 2)
     end
@@ -66,10 +66,10 @@ RSpec.describe PyriteExtensions::Admin::ExtensionsController do
         internal_note: "Two reports",
       )
 
-      get "/pyrite/api/v1/admin/extensions/alpha-tool"
+      get "/pyrite/registry/admin/extensions/alpha-tool.json"
 
       expect(response.status).to eq(200)
-      body = response.parsed_body
+      body = response.parsed_body["extension"]
       expect(body["releases"].map { |r| r["version"] }).to eq(["1.0.0"])
       expect(body["events"].first).to include(
         "actor_username" => admin.username,
@@ -79,10 +79,10 @@ RSpec.describe PyriteExtensions::Admin::ExtensionsController do
     end
 
     it "finds scoped ids and answers 404 for unknown ones" do
-      get "/pyrite/api/v1/admin/extensions/@my-org/beta"
+      get "/pyrite/registry/admin/extensions/@my-org/beta.json"
       expect(response.status).to eq(200)
 
-      get "/pyrite/api/v1/admin/extensions/nobody"
+      get "/pyrite/registry/admin/extensions/nobody.json"
       expect(response.status).to eq(404)
     end
   end

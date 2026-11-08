@@ -8,10 +8,10 @@ import { ajax } from "discourse/lib/ajax";
 import { popupAjaxError } from "discourse/lib/ajax-error";
 import DButton from "discourse/ui-kit/d-button";
 import { i18n } from "discourse-i18n";
-import PyriteModerationForm from "./pyrite-moderation-form";
-import PyriteStatusBadge from "./pyrite-status-badge";
+import PyriteModerationForm from "discourse/plugins/discourse-pyrite-ide-extensions/discourse/components/pyrite-moderation-form";
+import PyriteStatusBadge from "discourse/plugins/discourse-pyrite-ide-extensions/discourse/components/pyrite-status-badge";
 
-const BASE = "/pyrite/api/v1/admin/extensions";
+const BASE = "/pyrite/registry/admin/extensions";
 
 // Staff view of every package: search, the audit trail, and setting the
 // standing of a package or of one of its releases.
@@ -61,7 +61,7 @@ export default class PyriteAdminPage extends Component {
   async fetchPage(page) {
     this.loading = true;
     try {
-      const result = await ajax(BASE, {
+      const result = await ajax(`${BASE}.json`, {
         data: {
           q: this.query || undefined,
           flagged: this.flaggedOnly || undefined,
@@ -110,7 +110,7 @@ export default class PyriteAdminPage extends Component {
   async select(extId) {
     this.editing = null;
     try {
-      this.selected = await ajax(`${BASE}/${extId}`);
+      this.selected = (await ajax(`${BASE}/${extId}.json`)).extension;
     } catch (error) {
       popupAjaxError(error);
     }
@@ -133,7 +133,7 @@ export default class PyriteAdminPage extends Component {
 
   @action
   async statusChanged() {
-    const extId = this.selected.ext_id;
+    const extId = this.selected.id;
     this.editing = null;
     await Promise.all([this.select(extId), this.fetchPage(this.page)]);
   }
@@ -180,12 +180,12 @@ export default class PyriteAdminPage extends Component {
           {{#each this.extensions as |extension|}}
             <tr
               class="pyrite-admin__row"
-              data-ext-id={{extension.ext_id}}
-              {{on "click" (fn this.select extension.ext_id)}}
+              data-ext-id={{extension.id}}
+              {{on "click" (fn this.select extension.id)}}
             >
               <td>
                 <strong>{{extension.name}}</strong>
-                <code>{{extension.ext_id}}</code>
+                <code>{{extension.id}}</code>
               </td>
               <td>{{extension.owner_username}}</td>
               <td><PyriteStatusBadge
@@ -228,7 +228,7 @@ export default class PyriteAdminPage extends Component {
         <section class="pyrite-admin__detail">
           <header class="pyrite-admin__detail-header">
             <h2>{{this.selected.name}}</h2>
-            <code>{{this.selected.ext_id}}</code>
+            <code>{{this.selected.id}}</code>
             <PyriteStatusBadge @level={{this.selected.moderation_level}} />
             <DButton
               class="btn-default pyrite-admin__edit-package"
@@ -270,7 +270,7 @@ export default class PyriteAdminPage extends Component {
 
           {{#if this.editing}}
             <PyriteModerationForm
-              @extId={{this.selected.ext_id}}
+              @extId={{this.selected.id}}
               @version={{this.editing.version}}
               @staff={{true}}
               @onDone={{this.statusChanged}}

@@ -21,7 +21,7 @@ module PyriteExtensions
         extension = Extension.includes(:owner, :releases, moderation_events: %i[actor release]).find_by(ext_id: params[:ext_id])
         raise Discourse::NotFound if extension.nil?
 
-        render_serialized(extension, AdminExtensionDetailSerializer, root: false)
+        render_serialized(extension, AdminExtensionDetailSerializer, root: "extension")
       end
 
       private

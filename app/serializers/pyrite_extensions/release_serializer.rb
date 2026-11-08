@@ -2,47 +2,28 @@
 
 module PyriteExtensions
   class ReleaseSerializer < ApplicationSerializer
-    attributes :ext_id,
-               :name,
+    attributes :extension_id,
                :version,
-               :sha256,
-               :size,
-               :type,
-               :platforms,
-               :permissions,
-               :author,
+               :manifest,
+               :artifact,
                :changelog,
                :published_at,
-               :download_url,
                :installable,
                :moderation
 
-    def ext_id
+    def extension_id
       object.extension.ext_id
     end
 
-    def name
-      object.extension.name
+    def manifest
+      object.manifest.merge(
+        'platforms' => object.manifest_platforms,
+        'permissions' => object.manifest_permissions,
+      )
     end
 
-    def type
-      object.manifest['type']
-    end
-
-    def platforms
-      object.manifest_platforms
-    end
-
-    def permissions
-      object.manifest_permissions
-    end
-
-    def author
-      object.manifest['author']
-    end
-
-    def download_url
-      "#{Discourse.base_url}/pyrite/api/v1/extensions/#{ext_id}/versions/#{object.version}/package.pyrix"
+    def artifact
+      { sha256: object.sha256, size: object.size }
     end
 
     def installable

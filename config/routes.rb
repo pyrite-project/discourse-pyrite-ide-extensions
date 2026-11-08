@@ -5,27 +5,28 @@ PyriteExtensions::Engine.routes.draw do
   version = /[0-9A-Za-z][0-9A-Za-z.\-]*/
 
   get "/new" => "pages#new", :format => false
-  get "/admin" => "pages#admin", :format => false
   get "/manage/:ext_id" => "pages#manage", :format => false, :constraints => { ext_id: }
   get "/install/:ext_id" => "pages#install", :format => false, :constraints => { ext_id: }
 
-  # Plugin ids and versions contain dots, so Rails' implicit ".:format" suffix is disabled.
-  scope "/api/v1", defaults: { format: :json } do
-    post "/packages" => "packages#create", :format => false
-    get "/advisories" => "advisories#index", :format => false
-    post "/extensions/:ext_id/versions" => "releases#create", :format => false, :constraints => { ext_id: }
-    post "/extensions/:ext_id/moderation" => "moderation#create", :format => false, :constraints => { ext_id: }
-    get "/admin/extensions" => "admin/extensions#index", :format => false
-    get "/admin/extensions/:ext_id" => "admin/extensions#show", :format => false, :constraints => { ext_id: }
-    post "/extensions" => "extensions#create", :format => false
-    get "/extensions/:ext_id" => "extensions#show", :format => false, :constraints => { ext_id: }
-    get "/extensions/:ext_id/versions/:version" => "releases#show",
+  # Match the JSON suffix literally: IDs and semantic versions also contain dots.
+  scope "/registry", defaults: { format: :json } do
+    post "/packages.json" => "packages#create", :format => false
+    get "/advisories.json" => "advisories#index", :format => false
+    post "/extensions/:ext_id/releases.json" => "releases#create", :format => false, :constraints => { ext_id: }
+    post "/extensions/:ext_id/moderation.json" => "moderation#create", :format => false, :constraints => { ext_id: }
+    get "/admin/extensions.json" => "admin/extensions#index", :format => false
+    get "/admin/extensions/:ext_id.json" => "admin/extensions#show", :format => false, :constraints => { ext_id: }
+    post "/extensions.json" => "extensions#create", :format => false
+    get "/extensions/:ext_id.json" => "extensions#show", :format => false, :constraints => { ext_id: }
+    get "/extensions/:ext_id/releases.json" => "releases#index",
+        :format => false, :constraints => { ext_id: }
+    get "/extensions/:ext_id/releases/:version.json" => "releases#show",
         :format => false,
         :constraints => {
           ext_id:,
           version:,
         }
-    get "/extensions/:ext_id/versions/:version/package.:package_format" => "downloads#show",
+    get "/extensions/:ext_id/releases/:version/package.:package_format" => "downloads#show",
         :format => false,
         :constraints => {
           ext_id:,
@@ -35,4 +36,9 @@ PyriteExtensions::Engine.routes.draw do
   end
 end
 
-Discourse::Application.routes.draw { mount ::PyriteExtensions::Engine, at: "/pyrite" }
+Discourse::Application.routes.draw do
+  mount ::PyriteExtensions::Engine, at: "/pyrite"
+
+  get "/admin/plugins/discourse-pyrite-ide-extensions/registry" =>
+        "pyrite_extensions/pages#admin", :constraints => StaffConstraint.new
+end

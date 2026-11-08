@@ -8,7 +8,7 @@ RSpec.describe PyriteExtensions::ModerationController do
   fab!(:extension) { Fabricate(:pyrite_extension, ext_id: "@my-org/hello", owner: author, topic:) }
   fab!(:release) { Fabricate(:pyrite_release, extension:, version: "1.0.0") }
 
-  let(:url) { "/pyrite/api/v1/extensions/@my-org/hello/moderation" }
+  let(:url) { "/pyrite/registry/extensions/@my-org/hello/moderation.json" }
   let(:body) { { version: "1.0.0", level: "advisory", severity: "high", public_message: "Reads files" } }
 
   before do
@@ -89,7 +89,7 @@ RSpec.describe PyriteExtensions::ModerationController do
     post url, params: body.merge(version: "9.9.9")
     expect(response.status).to eq(404)
 
-    post "/pyrite/api/v1/extensions/nobody/moderation", params: body
+    post "/pyrite/registry/extensions/nobody/moderation.json", params: body
     expect(response.status).to eq(404)
   end
 
@@ -97,7 +97,7 @@ RSpec.describe PyriteExtensions::ModerationController do
     sign_in(admin)
     post url, params: body
 
-    get "/pyrite/api/v1/advisories", params: { releases: "@my-org/hello@1.0.0" }
+    get "/pyrite/registry/advisories.json", params: { releases: "@my-org/hello@1.0.0" }
 
     entry = response.parsed_body["advisories"].first
     expect(entry["moderation"]).to include("level" => "advisory", "severity" => "high")

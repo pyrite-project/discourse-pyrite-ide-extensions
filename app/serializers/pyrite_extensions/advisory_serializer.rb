@@ -2,9 +2,9 @@
 
 module PyriteExtensions
   class AdvisorySerializer < ApplicationSerializer
-    attributes :ext_id, :version, :installable, :moderation
+    attributes :extension_id, :version, :installable, :moderation
 
-    def ext_id
+    def extension_id
       object.extension.ext_id
     end
 

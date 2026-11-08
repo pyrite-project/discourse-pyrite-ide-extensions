@@ -9,13 +9,13 @@ module PyriteExtensions
       extension = find_visible_extension!
       serializer =
         guardian.can_manage_pyrite_extension?(extension) ? ManageExtensionSerializer : ExtensionSerializer
-      render_serialized(extension, serializer, root: false)
+      render_serialized(extension, serializer, root: "extension")
     end
 
     def create
       Extension::Publish.call(service_params) do
         on_success do |extension:|
-          render json: success_json.merge(ext_id: extension.ext_id, topic_url: extension.topic.url)
+          render_serialized(extension, ExtensionSerializer, root: "extension")
         end
         on_failed_policy(:can_publish) { raise Discourse::InvalidAccess }
         on_failed_policy(:valid_package) { |policy| render_json_error(policy.reason, status: 422) }

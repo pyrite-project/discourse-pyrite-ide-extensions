@@ -68,7 +68,7 @@ export default class PyriteInstallPage extends Component {
 
   get deepLink() {
     return buildDeepLink({
-      extId: this.args.extension.ext_id,
+      extId: this.args.extension.id,
       version: this.release.version,
       origin: this.origin,
     });
@@ -109,7 +109,7 @@ export default class PyriteInstallPage extends Component {
   }
 
   get versions() {
-    return this.args.extension.versions.map((entry) => ({
+    return this.args.extension.releases.map((entry) => ({
       version: entry.version,
       selected: entry.version === this.release.version,
     }));
@@ -118,7 +118,7 @@ export default class PyriteInstallPage extends Component {
   packageLink(format) {
     return packageUrl({
       origin: this.origin,
-      extId: this.args.extension.ext_id,
+      extId: this.args.extension.id,
       version: this.release.version,
       format,
     });
@@ -193,9 +193,9 @@ export default class PyriteInstallPage extends Component {
           </select>
         </header>
 
-        {{#if @release.permissions.length}}
+        {{#if @release.manifest.permissions.length}}
           <ul class="pyrite-install__permissions">
-            {{#each @release.permissions as |permission|}}
+            {{#each @release.manifest.permissions as |permission|}}
               <li class="pyrite-install__permission">{{permission}}</li>
             {{/each}}
           </ul>

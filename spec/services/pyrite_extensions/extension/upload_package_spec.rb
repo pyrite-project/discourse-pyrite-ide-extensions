@@ -84,6 +84,33 @@ RSpec.describe PyriteExtensions::Extension::UploadPackage do
       it { is_expected.to fail_a_policy(:version_not_published) }
     end
 
+    context "when uploading a scoped extension" do
+      let(:file) do
+        uploaded_zip(
+          "plugin.toml" => manifest_toml("id" => "@alice/hello"),
+          "__main__.py" => "print(1)",
+        )
+      end
+
+      it "does not claim an unused scope just by staging a package" do
+        expect { result }.not_to change { PyriteExtensions::Scope.count }
+        expect(result).to run_successfully
+      end
+
+      it "rejects a scope owned by another user before storing the upload" do
+        PyriteExtensions::Scope.claim_for("@alice/other", Fabricate(:user))
+
+        expect { result }.not_to change { Upload.count }
+        expect(result).to fail_a_policy(:scope_available)
+      end
+
+      it "allows another package from the scope owner" do
+        PyriteExtensions::Scope.claim_for("@alice/other", user)
+
+        expect(result).to run_successfully
+      end
+    end
+
     context "when everything is ok" do
       it { is_expected.to run_successfully }
 

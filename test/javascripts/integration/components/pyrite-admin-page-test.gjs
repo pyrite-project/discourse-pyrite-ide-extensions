@@ -3,11 +3,11 @@ import { module, test } from "qunit";
 import { setupRenderingTest } from "discourse/tests/helpers/component-test";
 import pretender, { response } from "discourse/tests/helpers/create-pretender";
 import formKit from "discourse/tests/helpers/form-kit-helper";
-import PyriteAdminPage from "discourse/plugins/discourse-pyrite-ide-extensions/discourse/components/pyrite-admin-page";
+import PyriteAdminPage from "discourse/plugins/discourse-pyrite-ide-extensions/admin/components/pyrite-admin-page";
 
-const row = (ext_id, overrides = {}) => ({
-  ext_id,
-  name: ext_id,
+const row = (id, overrides = {}) => ({
+  id,
+  name: id,
   owner_username: "ann",
   moderation_level: "none",
   releases_count: 2,
@@ -16,7 +16,7 @@ const row = (ext_id, overrides = {}) => ({
 });
 
 const detail = {
-  ext_id: "@my-org/beta",
+  id: "@my-org/beta",
   name: "Beta",
   moderation_level: "deprecated",
   moderation_message: "old",
@@ -46,7 +46,7 @@ module("Integration | Component | pyrite-admin-page", function (hooks) {
 
   hooks.beforeEach(function () {
     this.requests = [];
-    pretender.get("/pyrite/api/v1/admin/extensions", (request) => {
+    pretender.get("/pyrite/registry/admin/extensions.json", (request) => {
       this.requests.push(request.queryParams);
       return response({
         extensions: [
@@ -59,8 +59,8 @@ module("Integration | Component | pyrite-admin-page", function (hooks) {
         meta: { total: 61, page_size: 30 },
       });
     });
-    pretender.get("/pyrite/api/v1/admin/extensions/@my-org/beta", () =>
-      response(detail)
+    pretender.get("/pyrite/registry/admin/extensions/@my-org/beta.json", () =>
+      response({ extension: detail })
     );
   });
 
@@ -123,7 +123,7 @@ module("Integration | Component | pyrite-admin-page", function (hooks) {
   test("sets a release's status and refreshes both views", async function (assert) {
     let body;
     pretender.post(
-      "/pyrite/api/v1/extensions/@my-org/beta/moderation",
+      "/pyrite/registry/extensions/@my-org/beta/moderation.json",
       (request) => {
         body = new URLSearchParams(request.requestBody);
         return response({ success: "OK" });
@@ -150,7 +150,7 @@ module("Integration | Component | pyrite-admin-page", function (hooks) {
   test("sets the status of the whole package, including delisting", async function (assert) {
     let body;
     pretender.post(
-      "/pyrite/api/v1/extensions/@my-org/beta/moderation",
+      "/pyrite/registry/extensions/@my-org/beta/moderation.json",
       (request) => {
         body = new URLSearchParams(request.requestBody);
         return response({ success: "OK" });

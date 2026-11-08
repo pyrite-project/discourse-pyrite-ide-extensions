@@ -40,7 +40,7 @@ module("Unit | Utility | pyrite-deep-link", function () {
         version: "1.2.0",
         format: "pyrix",
       }),
-      "https://forum.example/pyrite/api/v1/extensions/com.example.hello/versions/1.2.0/package.pyrix"
+      "https://forum.example/pyrite/registry/extensions/com.example.hello/releases/1.2.0/package.pyrix"
     );
   });
 

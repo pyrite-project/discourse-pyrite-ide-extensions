@@ -13,6 +13,7 @@ class PyriteExtensions::Extension::PublishRelease
 
   model :extension
   policy :can_manage
+  policy :scope_available
   policy :extension_not_removed
   model :upload
   model :package, :open_package
@@ -36,6 +37,10 @@ class PyriteExtensions::Extension::PublishRelease
 
   def can_manage(extension:, guardian:)
     guardian.can_manage_pyrite_extension?(extension)
+  end
+
+  def scope_available(extension:, guardian:)
+    PyriteExtensions::Scope.available_to?(extension.ext_id, guardian.user)
   end
 
   # Nothing new can be added to a plugin staff have removed.

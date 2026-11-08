@@ -1,5 +1,99 @@
 Pyrite IDE extension registry
 
+Scope ownership
+---------------
+The first successful publication of an ID such as @alice/hello reserves
+@alice for that publisher's user ID. The scope is independent of usernames;
+it does not need to match the publisher's Discourse username. The owner can
+publish more plugins in that scope. Other users, including staff, cannot
+publish plugins or releases in it. Existing staff moderation remains available.
+Unscoped IDs keep their existing behavior.
+
+Claims are stored independently in pyrite_extension_scopes and survive deletion
+of every plugin and package in the scope. Do not delete claims during package,
+plugin, or user cleanup, or transfer them when a username changes. There is no
+public scope deletion or transfer operation.
+
+Uploading a staged package does not reserve a scope. Claiming happens inside
+the publication transaction, so a failed publication leaves no reservation.
+A unique scope-name index arbitrates concurrent first publications. Existing
+development data is backfilled using the earliest plugin's creator per scope;
+other users with older conflicting plugins cannot publish further releases.
+
+Registry API
+------------
+Metadata endpoints use a literal .json suffix under /pyrite/registry. Package
+files keep their .pyrix or .zip suffix. The unreleased /pyrite/api/v1 routes
+have been removed; the Discourse frontend and Pyrite IDE must be updated together.
+
+  GET  /pyrite/registry/extensions/:id.json
+  GET  /pyrite/registry/extensions/:id/releases.json
+  GET  /pyrite/registry/extensions/:id/releases/:version.json
+  GET  /pyrite/registry/extensions/:id/releases/:version/package.pyrix
+  GET  /pyrite/registry/extensions/:id/releases/:version/package.zip
+  GET  /pyrite/registry/advisories.json?releases=hello@1.0.0,@alice/tool@2.0.0
+  POST /pyrite/registry/packages.json
+  POST /pyrite/registry/extensions.json
+  POST /pyrite/registry/extensions/:id/releases.json
+  POST /pyrite/registry/extensions/:id/moderation.json
+  GET  /pyrite/registry/admin/extensions.json
+  GET  /pyrite/registry/admin/extensions/:id.json
+
+An ID may be unscoped or scoped (@alice/tool), including dots. The scope
+separator may also be encoded as %2F. Versions use canonical semantic versions,
+including prereleases. The suffix is matched separately from these values.
+The releases list follows descending semantic-version order and applies the
+same visibility rules as individual releases.
+
+Responses use snake_case and semantic roots: extension, release, releases,
+package (staged upload), extensions (admin list), and advisories. Extension
+objects expose their public string ID as id; references from releases and
+advisories use extension_id. Database field names are not the API contract.
+Publishing returns an extension or release under the same root as reading it.
+Errors retain Discourse's HTTP statuses and errors/error_type response format.
+The admin list retains its meta.total/meta.page_size and page/q/flagged/level
+query parameters. The existing publishing and moderation request fields are
+unchanged.
+
+A release response looks like this (checksum abbreviated for illustration):
+
+  {
+    "release": {
+      "extension_id": "@alice/tool",
+      "version": "1.0.0",
+      "manifest": {
+        "id": "@alice/tool",
+        "name": "Tool",
+        "version": "1.0.0",
+        "manifest_version": 2,
+        "type": "service",
+        "platforms": ["linux"],
+        "permissions": []
+      },
+      "artifact": { "sha256": "<64 lowercase hex characters>", "size": 1234 },
+      "changelog": null,
+      "published_at": "2026-11-08T12:00:00Z",
+      "installable": true,
+      "moderation": {
+        "level": "none", "severity": null, "message": null, "scope": "release"
+      }
+    }
+  }
+
+The IDE derives the package path from the requested registry, ID, and version.
+There is no download_url field; metadata never selects a different download
+host. The manifest is the published version's manifest, while plugin-wide
+presentation fields (summary, repository, owner, topic) belong to extension.
+
+Admin interface
+---------------
+The staff registry page is /admin/plugins/discourse-pyrite-ide-extensions/registry.
+It uses Discourse's admin plugin configuration route and sidebar registration,
+with the existing staff-only backend checks. The previous /pyrite/admin page
+is removed. Authors still use /pyrite/manage/:id to publish new releases and
+manage their own plugins; installation and first publication keep their
+existing public page routes.
+
 Development
 -----------
 Requires the semantic gem (installed on boot through the plugin gem

@@ -117,6 +117,18 @@ RSpec.describe PyriteExtensions::Extension::PublishRelease do
       it { is_expected.to run_successfully }
     end
 
+    context "when staff try to publish inside another user's scope" do
+      let(:acting_user) { admin }
+
+      before do
+        extension.update!(ext_id: "@author/hello")
+        PyriteExtensions::Scope.claim_for(extension.ext_id, author)
+        params[:ext_id] = extension.ext_id
+      end
+
+      it { is_expected.to fail_a_policy(:scope_available) }
+    end
+
     context "when a backport is published after a higher version" do
       let(:manifest_version) { "0.9.5" }
 

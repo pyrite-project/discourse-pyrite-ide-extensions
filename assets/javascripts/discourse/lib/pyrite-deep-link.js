@@ -6,7 +6,7 @@ export function buildDeepLink({ extId, version, origin }) {
 }
 
 export function packageUrl({ origin, extId, version, format }) {
-  return `${origin}/pyrite/api/v1/extensions/${extId}/versions/${version}/package.${format}`;
+  return `${origin}/pyrite/registry/extensions/${extId}/releases/${version}/package.${format}`;
 }
 
 // Advisories at these severities must be read and acknowledged before anything is launched.

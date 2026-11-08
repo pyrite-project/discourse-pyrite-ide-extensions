@@ -2,7 +2,7 @@
 
 module PyriteExtensions
   class AdminExtensionSerializer < ApplicationSerializer
-    attributes :ext_id,
+    attributes :id,
                :name,
                :owner_username,
                :topic_id,
@@ -13,6 +13,10 @@ module PyriteExtensions
                :moderation_severity,
                :moderation_message,
                :updated_at
+
+    def id
+      object.ext_id
+    end
 
     def owner_username
       object.owner.username

@@ -6,11 +6,11 @@ import PyriteManagePage from "discourse/plugins/discourse-pyrite-ide-extensions/
 
 function buildExtension(overrides = {}) {
   return {
-    ext_id: "@my-org/hello",
+    id: "@my-org/hello",
     name: "Hello",
     topic_url: "/t/hello/1",
     latest_version: "1.1.0",
-    versions: [],
+    releases: [],
     moderation: { level: "none" },
     can_manage: true,
     staff: false,
@@ -113,17 +113,19 @@ module("Integration | Component | pyrite-manage-page", function (hooks) {
 
   test("publishes a new version and shows it afterwards", async function (assert) {
     let published;
-    pretender.post("/pyrite/api/v1/packages", () => response(staged()));
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({ package: staged() })
+    );
     pretender.post(
-      "/pyrite/api/v1/extensions/@my-org/hello/versions",
+      "/pyrite/registry/extensions/@my-org/hello/releases.json",
       (request) => {
         published = new URLSearchParams(request.requestBody);
-        return response({ success: "OK", version: "1.2.0" });
+        return response({ release: { version: "1.2.0" } });
       }
     );
-    pretender.get("/pyrite/api/v1/extensions/@my-org/hello", () =>
-      response(
-        buildExtension({
+    pretender.get("/pyrite/registry/extensions/@my-org/hello.json", () =>
+      response({
+        extension: buildExtension({
           release_details: [
             {
               version: "1.2.0",
@@ -135,8 +137,8 @@ module("Integration | Component | pyrite-manage-page", function (hooks) {
             },
             ...buildExtension().release_details,
           ],
-        })
-      )
+        }),
+      })
     );
     const extension = buildExtension();
     await render(
@@ -158,12 +160,12 @@ module("Integration | Component | pyrite-manage-page", function (hooks) {
   });
 
   test("refuses a package that belongs to another plugin", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () =>
-      response(
-        staged({
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({
+        package: staged({
           manifest: { id: "other-plugin", version: "1.0.0", permissions: [] },
-        })
-      )
+        }),
+      })
     );
     const extension = buildExtension();
     await render(
@@ -177,7 +179,7 @@ module("Integration | Component | pyrite-manage-page", function (hooks) {
   });
 
   test("shows why the server rejected a package", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () =>
+    pretender.post("/pyrite/registry/packages.json", () =>
       response(422, { errors: ["The package has no __main__.py at its root."] })
     );
     const extension = buildExtension();

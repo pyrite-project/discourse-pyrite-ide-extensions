@@ -27,6 +27,7 @@ class PyriteExtensions::Extension::UploadPackage
   model :package, :open_package
   policy :valid_package, class_name: PyriteExtensions::Extension::Policy::ValidPackage
   model :extension, :find_extension, optional: true
+  policy :scope_available
   policy :extension_id_available
   policy :version_not_published
   model :upload, :store_upload
@@ -43,6 +44,10 @@ class PyriteExtensions::Extension::UploadPackage
 
   def find_extension(package:)
     PyriteExtensions::Extension.find_by(ext_id: package.manifest.id)
+  end
+
+  def scope_available(package:, guardian:)
+    PyriteExtensions::Scope.available_to?(package.manifest.id, guardian.user)
   end
 
   def extension_id_available(extension:, guardian:)

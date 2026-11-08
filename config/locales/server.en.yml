@@ -56,6 +56,7 @@ en:
     errors:
       file_type: "Upload a .pyrix or .zip file."
       file_too_big: "The package is larger than the allowed size."
+      scope_taken: "This scope belongs to another user."
       ext_id_taken: "This plugin id is already registered."
       ext_id_taken_validation: "is already registered"
       version_exists: "This version already exists."

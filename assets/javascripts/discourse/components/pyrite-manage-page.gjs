@@ -22,7 +22,7 @@ export default class PyriteManagePage extends Component {
   @tracked error = null;
 
   get extUrl() {
-    return `/pyrite/api/v1/extensions/${this.extension.ext_id}`;
+    return `/pyrite/registry/extensions/${this.extension.id}`;
   }
 
   get releases() {
@@ -42,7 +42,7 @@ export default class PyriteManagePage extends Component {
   }
 
   get wrongPackage() {
-    return this.staged && this.staged.manifest.id !== this.extension.ext_id;
+    return this.staged && this.staged.manifest.id !== this.extension.id;
   }
 
   get canPublish() {
@@ -50,7 +50,7 @@ export default class PyriteManagePage extends Component {
   }
 
   async refresh() {
-    this.extension = await ajax(this.extUrl);
+    this.extension = (await ajax(`${this.extUrl}.json`)).extension;
   }
 
   @action
@@ -102,7 +102,7 @@ export default class PyriteManagePage extends Component {
     this.error = null;
     this.publishing = true;
     try {
-      await ajax(`${this.extUrl}/versions`, {
+      await ajax(`${this.extUrl}/releases.json`, {
         type: "POST",
         data: {
           upload_id: this.staged.upload_id,
@@ -123,7 +123,7 @@ export default class PyriteManagePage extends Component {
     <div class="pyrite-manage">
       <header class="pyrite-manage__header">
         <h1 class="pyrite-manage__title">{{this.extension.name}}</h1>
-        <code class="pyrite-manage__id">{{this.extension.ext_id}}</code>
+        <code class="pyrite-manage__id">{{this.extension.id}}</code>
         {{#if this.extension.topic_url}}
           <a class="pyrite-manage__topic" href={{this.extension.topic_url}}>
             {{dIcon "arrow-left"}}
@@ -131,7 +131,10 @@ export default class PyriteManagePage extends Component {
           </a>
         {{/if}}
         {{#if this.extension.staff}}
-          <a class="pyrite-manage__admin" href="/pyrite/admin">
+          <a
+            class="pyrite-manage__admin"
+            href="/admin/plugins/discourse-pyrite-ide-extensions/registry"
+          >
             {{i18n "pyrite_extensions.admin.title"}}
           </a>
         {{/if}}
@@ -213,7 +216,7 @@ export default class PyriteManagePage extends Component {
             {{/if}}
           </h2>
           <PyriteModerationForm
-            @extId={{this.extension.ext_id}}
+            @extId={{this.extension.id}}
             @version={{this.editing.version}}
             @staff={{this.extension.staff}}
             @onDone={{this.statusChanged}}

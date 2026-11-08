@@ -30,6 +30,8 @@ module PyriteExtensions
     validates :summary, length: { maximum: MAX_SUMMARY_LENGTH }
     validates :repo_url, :homepage_url, format: { with: URL_PATTERN }, allow_blank: true
 
+    before_create :claim_scope
+
     # Semantic version order, not insertion order: a backport 1.0.1 published after 2.0.0 stays below it.
     def releases_newest_first
       releases.sort_by(&:semver).reverse
@@ -40,6 +42,13 @@ module PyriteExtensions
     end
 
     private
+
+    def claim_scope
+      return if Scope.claim_for(ext_id, owner)
+
+      errors.add(:ext_id, I18n.t('pyrite_extensions.errors.scope_taken'))
+      throw :abort
+    end
 
     def ext_id_is_valid
       errors.add(:ext_id, :invalid) if ext_id.present? && !Manifest.valid_id?(ext_id)

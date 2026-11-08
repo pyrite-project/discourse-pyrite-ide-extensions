@@ -109,6 +109,36 @@ RSpec.describe PyriteExtensions::Extension::Publish do
       end
     end
 
+    context "when publishing a scoped extension" do
+      let(:entries) do
+        {
+          "plugin.toml" => manifest_toml("id" => "@alice/hello"),
+          "__main__.py" => "print('hi')",
+        }
+      end
+
+      it "claims the scope for the publisher" do
+        expect(result).to run_successfully
+        expect(PyriteExtensions::Scope.find_by!(name: "@alice").owner_id).to eq(user.id)
+      end
+
+      it "rejects a scope claimed after the upload was staged" do
+        upload
+        PyriteExtensions::Scope.claim_for("@alice/other", Fabricate(:user))
+
+        expect(result).to fail_with_an_invalid_model(:extension)
+        expect(PyriteExtensions::Extension.exists?(ext_id: "@alice/hello")).to eq(false)
+      end
+
+      it "rolls back the scope claim when topic creation fails" do
+        upload
+        PyriteExtensions::Extension::Action::CreateTopic.stubs(:call).raises(StandardError, "boom")
+
+        expect { result }.not_to change { PyriteExtensions::Scope.count }
+        expect(result).to fail_to_find_a_model(:topic)
+      end
+    end
+
     context "when everything is ok" do
       it { is_expected.to run_successfully }
 

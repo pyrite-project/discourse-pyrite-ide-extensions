@@ -49,7 +49,9 @@ module("Integration | Component | pyrite-publish-wizard", function (hooks) {
   });
 
   test("shows what the server found in the uploaded package", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () => response(stagedPackage()));
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({ package: stagedPackage() })
+    );
 
     await render(<template><PyritePublishWizard /></template>);
     await chooseFile();
@@ -62,7 +64,7 @@ module("Integration | Component | pyrite-publish-wizard", function (hooks) {
   });
 
   test("shows the server's reason when the package is rejected", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () =>
+    pretender.post("/pyrite/registry/packages.json", () =>
       response(422, { errors: ["The package has no __main__.py at its root."] })
     );
 
@@ -75,8 +77,8 @@ module("Integration | Component | pyrite-publish-wizard", function (hooks) {
   });
 
   test("refuses to continue with a plugin that is already published", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () =>
-      response(stagedPackage({ existing_extension: true }))
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({ package: stagedPackage({ existing_extension: true }) })
     );
 
     await render(<template><PyritePublishWizard /></template>);
@@ -88,13 +90,16 @@ module("Integration | Component | pyrite-publish-wizard", function (hooks) {
 
   test("walks from the package to a published topic", async function (assert) {
     let published;
-    pretender.post("/pyrite/api/v1/packages", () => response(stagedPackage()));
-    pretender.post("/pyrite/api/v1/extensions", (request) => {
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({ package: stagedPackage() })
+    );
+    pretender.post("/pyrite/registry/extensions.json", (request) => {
       published = new URLSearchParams(request.requestBody);
       return response({
-        success: "OK",
-        ext_id: "com.example.hello",
-        topic_url: "/t/hello/12",
+        extension: {
+          id: "com.example.hello",
+          topic_url: "/t/hello/12",
+        },
       });
     });
     const routeTo = sinon.stub(DiscourseURL, "routeTo");
@@ -122,7 +127,9 @@ module("Integration | Component | pyrite-publish-wizard", function (hooks) {
   });
 
   test("keeps the entered details when going back from the review step", async function (assert) {
-    pretender.post("/pyrite/api/v1/packages", () => response(stagedPackage()));
+    pretender.post("/pyrite/registry/packages.json", () =>
+      response({ package: stagedPackage() })
+    );
 
     await render(<template><PyritePublishWizard /></template>);
     await chooseFile();
